@@ -1,0 +1,173 @@
+﻿@page "/Parqueos/Lista_ParqueoCaballeros"
+@using Admin_Parqueo.Servicios
+@using Admin_Parqueo.Estructura
+@using Admin_Parqueo.Clases
+@inject ServiceParqueo ParqueoService
+@inject NavigationManager NavigationManager
+
+<h3 class="text-center">Parqueo de Caballeros - Listados Completos</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        @if (primerosIngresados != null && !primerosIngresados.ListaVacia())
+        {
+            <h4>Primeros Vehículos Que Ingresaron</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Vehículo ID</th>
+                        <th>Hora de Entrada</th>
+                        <th>Hora de Salida</th>
+                        <th>Emergencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Nodo nodo in primerosIngresados)
+                    {
+                        RegistroParqueo registro = (RegistroParqueo)nodo.Informacion;
+                        <tr>
+                            <td>@registro.VehiculoID</td>
+                            <td>@registro.HoraEntrada.ToString("g")</td>
+                            <td>@(registro.HoraSalida?.ToString("g") ?? "N/A")</td>
+                            <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No hay registros de los primeros vehículos que ingresaron.</p>
+        }
+    </div>
+
+    <div class="col-md-6">
+        @if (ultimosIngresados != null && !ultimosIngresados.ListaVacia())
+        {
+            <h4>Últimos Vehículos Que Ingresaron</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Vehículo ID</th>
+                        <th>Hora de Entrada</th>
+                        <th>Hora de Salida</th>
+                        <th>Emergencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Nodo nodo in ultimosIngresados)
+                    {
+                        RegistroParqueo registro = (RegistroParqueo)nodo.Informacion;
+                        <tr>
+                            <td>@registro.VehiculoID</td>
+                            <td>@registro.HoraEntrada.ToString("g")</td>
+                            <td>@(registro.HoraSalida?.ToString("g") ?? "N/A")</td>
+                            <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No hay registros de los últimos vehículos que ingresaron.</p>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        @if (primerosSalidos != null && !primerosSalidos.ListaVacia())
+        {
+            <h4>Primeros Vehículos Que Salieron</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Vehículo ID</th>
+                        <th>Hora de Entrada</th>
+                        <th>Hora de Salida</th>
+                        <th>Emergencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Nodo nodo in primerosSalidos)
+                    {
+                        RegistroParqueo registro = (RegistroParqueo)nodo.Informacion;
+                        <tr>
+                            <td>@registro.VehiculoID</td>
+                            <td>@registro.HoraEntrada.ToString("g")</td>
+                            <td>@(registro.HoraSalida?.ToString("g") ?? "N/A")</td>
+                            <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No hay registros de los primeros vehículos que salieron.</p>
+        }
+    </div>
+
+    <div class="col-md-6">
+        @if (ultimosSalidos != null && !ultimosSalidos.ListaVacia())
+        {
+            <h4>Últimos Vehículos Que Salieron</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Vehículo ID</th>
+                        <th>Hora de Entrada</th>
+                        <th>Hora de Salida</th>
+                        <th>Emergencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Nodo nodo in ultimosSalidos)
+                    {
+                        RegistroParqueo registro = (RegistroParqueo)nodo.Informacion;
+                        <tr>
+                            <td>@registro.VehiculoID</td>
+                            <td>@registro.HoraEntrada.ToString("g")</td>
+                            <td>@(registro.HoraSalida?.ToString("g") ?? "N/A")</td>
+                            <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No hay registros de los últimos vehículos que salieron.</p>
+        }
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <button class="btn btn-primary" @onclick="Regresar">Regresar</button>
+</div>
+
+@code {
+    private ListaEnlazadaSimple primerosIngresados;
+    private ListaEnlazadaSimple ultimosIngresados;
+    private ListaEnlazadaSimple primerosSalidos;
+    private ListaEnlazadaSimple ultimosSalidos;
+    private const int NumeroDeRegistrosAMostrar = 5;
+
+    protected override async Task OnInitializedAsync()
+    {
+        primerosIngresados = await ParqueoService.ObtenerPrimerosRegistros("DENTRO", NumeroDeRegistrosAMostrar);
+        ultimosIngresados = await ParqueoService.ObtenerUltimosRegistros("DENTRO", NumeroDeRegistrosAMostrar);
+        primerosSalidos = await ParqueoService.ObtenerPrimerosRegistros("AFUERA", NumeroDeRegistrosAMostrar);
+        ultimosSalidos = await ParqueoService.ObtenerUltimosRegistros("AFUERA", NumeroDeRegistrosAMostrar);
+    }
+
+    private void Regresar()
+    {
+        NavigationManager.NavigateTo("/Parqueos/ParqueoCaballeros");
+    }
+}
+
+
+
+

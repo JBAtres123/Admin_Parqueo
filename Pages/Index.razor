@@ -1,0 +1,85 @@
+﻿@page "/"
+<PageTitle>Inicio</PageTitle>
+
+<div class="container bg-light p-4 my-4 rounded shadow-lg">
+    <h1 class="text-center fade-in">Bienvenido al Sistema de Parqueo</h1>
+
+    <p class="text-center text-muted">Seleccione una opción a continuación para continuar:</p>
+
+    <div class="d-flex justify-content-center gap-4 mt-4">
+        <NavLink class="btn btn-damas" href="/Parqueos/ParqueoDamas">Parqueo de Damas</NavLink>
+        <NavLink class="btn btn-caballeros" href="/Parqueos/ParqueoCaballeros">Parqueo de Caballeros</NavLink>
+        <NavLink class="btn btn-secondary" href="/Usuario/AgregarUsuario">Iniciar Sesión Administrador</NavLink>
+        <NavLink class="btn btn-success" href="/Usuario/AgregarVehiculo">Agregar Vehículo</NavLink>
+    </div>
+
+    <div class="d-flex justify-content-center mt-5">
+        <img src="https://image.isu.pub/171124055049-23882a9bed872d1b9166bc9d6282e5a7/jpg/page_1.jpg" alt="Imagen de ejemplo" class="rounded img-hover" style="width: 200px; height: 150px;" />
+    </div>
+</div>
+
+<style>
+   
+    .shadow-lg {
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .fade-in {
+        animation: fadeIn 2s;
+    }
+
+    
+    .btn-custom {
+        border: none;
+        border-radius: 10px;
+        color: white;
+        padding: 10px 20px;
+        transition: all 0.3s;
+    }
+
+    .btn-damas {
+        background-color: #FF69B4; 
+    }
+
+        .btn-damas:hover {
+            background-color: #FF1493; 
+        }
+
+    .btn-caballeros {
+        background-color: #007bff; 
+    }
+
+        .btn-caballeros:hover {
+            background-color: #0056b3; 
+        }
+
+    .btn-secondary {
+        background-color: #6c757d; 
+    }
+
+        .btn-secondary:hover {
+            background-color: #5a6268; 
+        }
+
+    .btn-success {
+        background-color: #28a745; 
+    }
+
+        .btn-success:hover {
+            background-color: #218838; 
+        }
+
+   
+    .img-hover {
+        transition: transform 0.3s, opacity 0.3s;
+    }
+
+        .img-hover:hover {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+</style>
+
+
+
+

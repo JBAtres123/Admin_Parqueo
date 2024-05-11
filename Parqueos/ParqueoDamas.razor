@@ -1,0 +1,205 @@
+﻿@page "/Parqueos/ParqueoDamas"
+@using Admin_Parqueo.Servicios
+@using Admin_Parqueo.Clases
+@using Admin_Parqueo.Estructura
+@inject ServiceParqueo ParqueoService
+@inject NavigationManager NavigationManager
+
+<h3 style="color: #FF69B4;">Parqueo de Damas</h3>
+
+@if (!mostrarFormulario)
+{
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <button class="btn btn-primary-female" @onclick="MostrarFormulario">Agregar Vehículo</button>
+        <button class="btn btn-warning-female" @onclick="SacarVehiculo">Sacar Vehículo</button>
+    </div>
+}
+else
+{
+    <div class="form-container">
+        <form>
+            <div class="form-group">
+                <label for="vehiculoId">ID del Vehículo:</label>
+                <input @bind="vehiculoId" class="form-control" id="vehiculoId" />
+            </div>
+            <div class="form-group">
+                <button class="btn btn-success-female" @onclick="AgregarRegistro">Confirmar Entrada</button>
+                <button class="btn btn-danger-female" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+@if (registrosParqueo != null && !registrosParqueo.ListaVacia())
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Vehículo ID</th>
+                    <th>Hora de Entrada</th>
+                    <th>Hora de Salida</th>
+                    <th>Emergencia</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Nodo nodo in registrosParqueo)
+                {
+                    var registro = (RegistroParqueo)nodo.Informacion;
+                    <tr>
+                        <td>@registro.VehiculoID</td>
+                        <td>@registro.HoraEntrada.ToString("g")</td>
+                        <td>@(registro.HoraSalida.HasValue ? registro.HoraSalida.Value.ToString("g") : "En parqueo")</td>
+                        <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p style="text-align: center;">No existen registros de parqueo.</p>
+}
+
+<button class="btn btn-primary-female" @onclick="NavigateToInicio">Ir al inicio</button>
+
+@code {
+    private ListaEnlazadaSimple registrosParqueo;
+    private bool mostrarFormulario = false;
+    private int vehiculoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        registrosParqueo = await ParqueoService.ObtenerRegistrosParqueoGeneroFemenino();
+    }
+
+    private void MostrarFormulario()
+    {
+        mostrarFormulario = !mostrarFormulario;
+    }
+
+    private async Task AgregarRegistro()
+    {
+        if (await ParqueoService.ExisteVehiculo(vehiculoId))
+        {
+            var nuevoRegistro = new RegistroParqueo
+                {
+                    VehiculoID = vehiculoId,
+                    HoraEntrada = DateTime.Now,
+                    TipoGenero = "F",
+                    Estado = "DENTRO",
+                    Emergencia = false
+                };
+
+            int registroId = await ParqueoService.AgregarRegistroParqueo(nuevoRegistro);
+            registrosParqueo.AgregarAlFinal(nuevoRegistro);
+            mostrarFormulario = false;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: Vehículo no existe o ID incorrecto.");
+        }
+    }
+
+    private async Task SacarVehiculo()
+    {
+        if (!registrosParqueo.ListaVacia())
+        {
+           
+            var nodo = registrosParqueo.PrimerNodo;
+            if (nodo != null)
+            {
+                var registro = (RegistroParqueo)nodo.Informacion;
+                bool updated = await ParqueoService.ActualizarEstadoVehiculo(registro.RegistroID, "AFUERA");
+                if (updated)
+                {
+                    registrosParqueo.Eliminar(registro);
+                    StateHasChanged();
+                }
+                else
+                {
+                    Console.WriteLine("Error al actualizar el estado del vehículo.");
+                }
+            }
+        }
+        else
+        {
+            Console.WriteLine("No hay vehículos para sacar.");
+        }
+    }
+
+    private void Cancelar()
+    {
+        mostrarFormulario = false;
+    }
+
+    private void NavigateToInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 20px;
+        background-color: #FFE4E1;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .form-container input.form-control {
+            border: 1px solid #FF69B4;
+            border-radius: 5px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+    .table-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-female {
+        background-color: #FF69B4;
+        color: #fff;
+        border-color: #FF69B4;
+        transition: all 0.3s ease;
+    }
+
+    .btn-warning-female {
+        background-color: #FFA07A;
+        color: #fff;
+        border-color: #FFA07A;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success-female {
+        background-color: #FF6347;
+        color: #fff;
+        border-color: #FF6347;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger-female {
+        background-color: #DB7093;
+        color: #fff;
+        border-color: #DB7093;
+        transition: all 0.3s ease;
+    }
+</style>
+
+
+
+

@@ -1,0 +1,143 @@
+﻿@page "/Usuario/AgregarVehiculo"
+@using Admin_Parqueo.Clases
+@using Admin_Parqueo.Servicios
+@inject ServiceParqueo ParqueoService
+@inject NavigationManager NavigationManager
+
+<h3>Agregar Vehículo</h3>
+
+<div class="container">
+    @if (errorMessage != null)
+    {
+        <div class="alert alert-danger fade-in" role="alert">
+            @errorMessage
+        </div>
+    }
+    @if (successMessage != null)
+    {
+        <div class="alert alert-success fade-in" role="alert">
+            @successMessage
+        </div>
+    }
+
+    <EditForm Model="@vehiculo" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="usuarioId">ID de Usuario:</label>
+            <InputNumber id="usuarioId" class="form-control" @bind-Value="vehiculo.UsuarioID" />
+        </div>
+        <div class="form-group">
+            <label for="placa">Placa:</label>
+            <InputText id="placa" class="form-control" @bind-Value="vehiculo.Placa" />
+        </div>
+        <div class="form-group">
+            <label para="tipoVehiculo">Tipo de Vehículo:</label>
+            <InputText id="tipoVehiculo" class="form-control" @bind-Value="vehiculo.TipoVehiculo" />
+        </div>
+        <div class="form-group">
+            <label para="modelo">Modelo:</label>
+            <InputText id="modelo" class="form-control" @bind-Value="vehiculo.Modelo" />
+        </div>
+        <div class="form-group">
+            <label para="color">Color:</label>
+            <InputText id="color" class="form-control" @bind-Value="vehiculo.Color" />
+        </div>
+
+        <div class="form-group d-flex justify-content-between">
+            <button type="submit" class="btn btn-success">Agregar</button>
+            <button type="button" class="btn btn-secondary" @onclick="LimpiarFormulario">Limpiar Formulario</button>
+        </div>
+    </EditForm>
+
+    <div class="mt-4">
+        <button class="btn btn-info" @onclick="RegresarInicio">Volver a Inicio</button>
+    </div>
+</div>
+
+<style>
+.container {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-control {
+    padding: 10px;
+    font-size: 16px;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.alert {
+    animation: fadeIn 2s;
+}
+
+.fade-in {
+    animation: fadeIn 1s;
+}
+
+
+</style>
+
+@code {
+    private Vehiculo vehiculo = new Vehiculo();
+    private string errorMessage;
+    private string successMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        // Verificar si el ID de usuario existe en la base de datos
+        var usuarioExistente = await ParqueoService.VerificarUsuarioExistente(vehiculo.UsuarioID);
+        if (!usuarioExistente)
+        {
+            errorMessage = "El ID del usuario no existe.";
+            successMessage = null; // Limpiar el mensaje de éxito si hay un error
+            return;
+        }
+
+        try
+        {
+            await ParqueoService.AddVehiculo(vehiculo);
+            successMessage = "El vehículo se agregó correctamente.";
+            errorMessage = null; // Limpiar el mensaje de error si hay éxito
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Error al agregar el vehículo: " + ex.Message;
+            successMessage = null; // Limpiar el mensaje de éxito si hay un error
+        }
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        errorMessage = "Por favor, complete todos los campos requeridos.";
+        successMessage = null; // Limpiar el mensaje de éxito si el formulario no es válido
+    }
+
+    private void LimpiarFormulario()
+    {
+        vehiculo = new Vehiculo();  // Restablecer el objeto Vehiculo a su estado inicial
+        errorMessage = null;  // Limpiar los mensajes de error
+        successMessage = null;  // Limpiar los mensajes de éxito
+        StateHasChanged();  // Actualizar la interfaz
+    }
+
+    private void RegresarInicio() {
+        NavigationManager.NavigateTo("/");  // Redirige a la página de inicio
+    }
+}
+
+
+
+

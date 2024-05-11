@@ -1,0 +1,230 @@
+﻿@page "/Parqueos/ParqueoCaballeros"
+@using Admin_Parqueo.Servicios
+@using Admin_Parqueo.Clases
+@using Admin_Parqueo.Estructura
+@inject ServiceParqueo ParqueoService
+@inject NavigationManager NavigationManager
+
+<h3 style="color: #1E90FF; text-align: center;">Parqueo de Caballeros</h3>
+
+<div style="display: flex; justify-content: center; margin-bottom: 20px;">
+    <button class="btn btn-primary-custom" @onclick="MostrarFormulario">Agregar Vehículo</button>
+    <button class="btn btn-warning-custom" @onclick="SacarVehiculo">Sacar Vehículo</button>
+    <button class="btn btn-info-custom" @onclick="NavigateToListaParqueoCaballeros">Listas</button>
+</div>
+
+@if (!mostrarFormulario)
+{
+    <div class="form-container">
+        <form>
+            <div class="form-group">
+                <label for="vehiculoId">ID del Vehículo:</label>
+                <input @bind="vehiculoId" class="form-control" id="vehiculoId" />
+            </div>
+            <div class="form-group">
+                <button class="btn btn-success-custom" @onclick="AgregarRegistro">Confirmar Entrada</button>
+                <button class="btn btn-danger-custom" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+@if (registrosParqueo != null && !registrosParqueo.ListaVacia())
+{
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Vehículo ID</th>
+                    <th>Hora de Entrada</th>
+                    <th>Hora de Salida</th>
+                    <th>Emergencia</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Nodo nodo in registrosParqueo)
+                {
+                    var registro = (RegistroParqueo)nodo.Informacion;
+                    <tr>
+                        <td>@registro.VehiculoID</td>
+                        <td>@registro.HoraEntrada.ToString("g")</td>
+                        <td>@(registro.HoraSalida.HasValue ? registro.HoraSalida.Value.ToString("g") : "En parqueo")</td>
+                        <td>@(registro.Emergencia ? "Sí" : "No")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <p style="text-align: center;">No existen registros de parqueo.</p>
+}
+
+<button class="btn btn-primary-custom" @onclick="NavigateToInicio">Ir al inicio</button>
+
+@code {
+    private ListaEnlazadaSimple registrosParqueo;
+    private bool mostrarFormulario = false;
+    private int vehiculoId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        registrosParqueo = await ParqueoService.ObtenerRegistrosParqueoGeneroMasculino();
+    }
+
+    private void MostrarFormulario()
+    {
+        mostrarFormulario = !mostrarFormulario;
+    }
+
+    private async Task AgregarRegistro()
+    {
+        if (await ParqueoService.ExisteVehiculo(vehiculoId))
+        {
+            var nuevoRegistro = new RegistroParqueo
+                {
+                    VehiculoID = vehiculoId,
+                    HoraEntrada = DateTime.Now,
+                    TipoGenero = "M",
+                    Estado = "DENTRO",
+                    Emergencia = false
+                };
+
+            int registroId = await ParqueoService.AgregarRegistroParqueo(nuevoRegistro);
+            registrosParqueo.AgregarAlInicio(nuevoRegistro);
+            mostrarFormulario = false;
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Error: Vehículo no existe o ID incorrecto.");
+        }
+    }
+
+    private void NavigateToListaParqueoCaballeros()
+    {
+        NavigationManager.NavigateTo("/Parqueos/Lista_ParqueoCaballeros");
+    }
+
+    private async Task SacarVehiculo()
+    {
+        RegistroParqueo ultimoVehiculo = await ParqueoService.ObtenerUltimoVehiculoDentro();
+        if (ultimoVehiculo != null)
+        {
+            bool updated = await ParqueoService.ActualizarEstadoVehiculo(ultimoVehiculo.RegistroID, "AFUERA");
+            if (updated)
+            {
+                registrosParqueo = await ParqueoService.ObtenerRegistrosParqueoGeneroMasculino();
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Error al actualizar el estado del vehículo.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("No hay vehículos para sacar.");
+        }
+    }
+
+    private void Cancelar()
+    {
+        mostrarFormulario = false;
+    }
+
+    private void NavigateToInicio()
+    {
+        NavigationManager.NavigateTo("/");
+    }
+}
+
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+        .form-container input.form-control {
+       
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+    .table-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-custom {
+        background-color: #1E90FF;
+        color: #fff;
+        border-color: #1E90FF;
+        transition: all 0.3s ease;
+    }
+
+    .btn-warning-custom {
+        background-color: #FFD700;
+        color: #fff;
+        border-color: #FFD700;
+        transition: all 0.3s ease;
+    }
+
+    .btn-info-custom {
+        background-color: #20B2AA;
+        color: #fff;
+        border-color: #20B2AA;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success-custom {
+        background-color: #008000;
+        color: #fff;
+        border-color: #008000;
+        transition: all 0.3s ease;
+    }
+
+    .btn-danger-custom {
+        background-color: #DC143C;
+        color: #fff;
+        border-color: #DC143C;
+        transition: all 0.3s ease;
+    }
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,149 @@
+﻿@page "/Usuario/AgregarUsuario"
+@using Admin_Parqueo.Servicios
+@using Admin_Parqueo.Clases
+@inject ServiceParqueo ParqueoService
+@inject NavigationManager NavigationManager
+
+<h3>Agregar Usuario</h3>
+
+<div class="container">
+    @if (mensajeExito != null)
+    {
+        <div class="alert alert-success fade-in" role="alert">
+            @mensajeExito
+        </div>
+    }
+    @if (mensajeError != null)
+    {
+        <div class="alert alert-danger fade-in" role="alert">
+            @mensajeError
+        </div>
+    }
+
+    <EditForm Model="@usuario" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <InputText id="nombre" class="form-control" @bind-Value="usuario.Nombre" />
+        </div>
+        <div class="form-group">
+            <label para="apellido">Apellido:</label>
+            <InputText id="apellido" class="form-control" @bind-Value="usuario.Apellido" />
+        </div>
+        <div class="form-group">
+            <label para="genero">Género:</label>
+            <select @bind="usuario.Genero" class="form-control">
+                <option value="" hidden>Seleccione género</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label para="telefono">Teléfono:</label>
+            <InputText id="telefono" class="form-control" @bind-Value="usuario.Telefono" />
+        </div>
+
+        <div class="form-group d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Registrar Usuario</button>
+            <button type="button" class="btn btn-secondary" @onclick="LimpiarFormulario">Limpiar Formulario</button>
+        </div>
+    </EditForm>
+
+    <!-- Botón para regresar a la página de inicio -->
+    <div class="mt-4">
+        <button class="btn btn-info" @onclick="RegresarInicio">Volver a Inicio</button>
+    </div>
+</div>
+
+<style>
+.container {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+}
+
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+}
+
+.alert {
+    font-weight: bold;
+    animation: fadeIn 1s;
+}
+
+.fade-in {
+    animation: fadeIn 2s;
+}
+
+
+</style>
+
+@code {
+    private Usuario usuario = new Usuario();
+    private string mensajeExito;
+    private string mensajeError;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await ParqueoService.AddUsuario(usuario.Nombre, usuario.Apellido, usuario.Genero, usuario.Telefono);
+            mensajeExito = "Usuario agregado con éxito.";
+            mensajeError = null;
+        } catch (Exception ex) {
+            mensajeError = $"Error al agregar usuario: {ex.Message}";
+            mensajeExito = null;
+        }
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        mensajeError = "Por favor, complete todos los campos obligatorios.";
+        mensajeExito = null;
+    }
+
+    private void LimpiarFormulario()
+    {
+        usuario = new Usuario();  // Restablecer el objeto Usuario a su estado inicial
+        mensajeExito = null;  // Limpiar mensajes de éxito
+        mensajeError = null;  // Limpiar mensajes de error
+        StateHasChanged();  // Actualizar la interfaz
+    }
+
+    private void RegresarInicio() {
+        NavigationManager.NavigateTo("/");  // Redirige a la página de inicio
+    }
+}
+
+
